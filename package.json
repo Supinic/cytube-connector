@@ -4,7 +4,7 @@
     "email": "supinic@pm.me"
   },
   "dependencies": {
-    "request": "^2.88.0",
+    "custom-request-promise": "github:supinic/custom-request-promise",
     "socket.io-client": "^2.2.0"
   },
   "deprecated": false,

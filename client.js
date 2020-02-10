@@ -1,7 +1,7 @@
 module.exports = (function () {
 	const EventEmitter = require("events");
 	const SocketIO = require("socket.io-client");
-	const request = require("request");
+	const request = require("custom-request-promise");
 
 	const defaultConfig = {
 		secure : true,
@@ -120,8 +120,9 @@ module.exports = (function () {
 			this.getSocketURL();
 		}
 
-		getSocketURL () {
+		async getSocketURL () {
 			const options = {
+				useFullResponse: true,
 				url: this.configURL,
 				headers: {
 					"User-Agent": this.agent
@@ -129,42 +130,43 @@ module.exports = (function () {
 				timeout: 20.0e3
 			};
 
-			request(options, (err, resp, body) => {
-				if (err) {
-					this.emit("error", new Error("Socket lookup failure", err));
-					return;
-				}
+			let resp = null;
+			try {
+				resp = await request(options);
+			}
+			catch (e) {
+				this.emit("error", new Error("Socket lookup failure", e));
+				return;
+			}
+			
+			if (resp.statusCode !== 200) {
+				this.emit("error", new Error("Socket lookup failure", resp.statusCode));
+				return;
+			}
 
-				if (resp.statusCode !== 200) {
-					this.emit("error", new Error("Socket lookup failure", resp.statusCode));
-					return;
-				}
+			let data = null;
+			try {
+				data = JSON.parse(resp.body);
+			}
+			catch (e) {
+				this.emit("error", new Error("Malformed JSON response", e));
+				return;
+			}
 
-				let data = null;
-				try {
-					data = JSON.parse(body);
+			const servers = [...data.servers];
+			while (servers.length) {
+				const server = servers.pop();
+				if (server.secure === this.secure && typeof server.ipv6 === "undefined") {
+					this.socketURL = server.url;
 				}
-				catch (e) {
-					this.emit("error", new Error("Malformed JSON response", e));
-					return;
-				}
+			}
 
-				const servers = [...data.servers];
-				while (servers.length) {
-					const server = servers.pop();
-					if (server.secure === this.secure && typeof server.ipv6 === "undefined") {
-						this.socketURL = server.url;
-					}
-				}
-
-				if (!this.socketURL) {
-					this.emit("error", new Error("No suitable socket available"));
-					return;
-				}
-
-				// this.console.log("Socket server url retrieved:", this.socketURL);
-				this.emit("ready");
-			});
+			if (!this.socketURL) {
+				this.emit("error", new Error("No suitable socket available"));
+				return;
+			}
+			
+			this.emit("ready");
 		}
 
 		connect () {
