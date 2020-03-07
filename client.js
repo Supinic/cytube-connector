@@ -1,23 +1,9 @@
 module.exports = (function () {
 	const EventEmitter = require("events");
 	const SocketIO = require("socket.io-client");
-	const request = require("custom-request-promise");
+	const got = require("got");
 
-	const defaultConfig = {
-		secure : true,
-		host : "cytu.be",
-		port : "443",
-		chan : "test",
-		pass : null,
-		user : "Test-" + Math.random().toString(16).slice(-8),
-		auth : null,
-		agent : "CyTube Client 0.4",
-		debug : (process.env.NODE_ENV !== "production"),
-		socketURL : null,
-		cooldown: {},
-		socket: null
-	};
-
+	const mandatoryConstructorOptions = ["chan", "host", "port", "user"];
 	const handlers = [ "disconnect",
 		/*
 		 These are from CyTube /src/user.js
@@ -101,9 +87,38 @@ module.exports = (function () {
 	];
 
 	class CytubeConnector extends EventEmitter {
+		#chan;
+		#host;
+		#port;
+		#user;
+
+		#agent = "cytube-client";
+		#auth = null;
+		#connected = false;
+		#killswitch = null;
+		#handlersAssigned = false;
+		#pass = null;
+		#secure = true;
+		#socket = null;
+		#socketURL = null;
+
 		constructor (options) {
 			super();
-			Object.assign(this, defaultConfig, options);
+
+			for (const option of mandatoryConstructorOptions) {
+				if (!options[option]) {
+					throw new Error(`Parameter "${option}" is required`);
+				}
+			}
+
+			this.#chan = options.chan;
+			this.#host = options.host;
+			this.#port = options.port;
+			this.#user = options.user;
+
+			this.#secure = options.secure ?? true;
+			this.#pass = options.pass ?? null;
+			this.#auth = options.auth ?? null;
 
 			this.once("ready", () => {
 				this.connect();
@@ -121,47 +136,31 @@ module.exports = (function () {
 		}
 
 		async getSocketURL () {
-			const options = {
-				useFullResponse: true,
-				url: this.configURL,
-				headers: {
-					"User-Agent": this.agent
-				},
-				timeout: 20.0e3
-			};
-
-			let resp = null;
+			let data = null;
 			try {
-				resp = await request(options);
+				data = await got({
+					useFullResponse: true,
+					url: `${this.#secure ? "https" : "http"}://${this.#host}:${this.#port}/socketconfig/${this.#chan}.json`,
+					headers: {
+						"User-Agent": this.#agent
+					},
+					timeout: 20.0e3
+				}).json();
 			}
 			catch (e) {
 				this.emit("error", new Error("Socket lookup failure", e));
-				return;
-			}
-			
-			if (resp.statusCode !== 200) {
-				this.emit("error", new Error("Socket lookup failure", resp.statusCode));
-				return;
-			}
-
-			let data = null;
-			try {
-				data = JSON.parse(resp.body);
-			}
-			catch (e) {
-				this.emit("error", new Error("Malformed JSON response", e));
 				return;
 			}
 
 			const servers = [...data.servers];
 			while (servers.length) {
 				const server = servers.pop();
-				if (server.secure === this.secure && typeof server.ipv6 === "undefined") {
-					this.socketURL = server.url;
+				if (server.secure === this.#secure && typeof server.ipv6 === "undefined") {
+					this.#socketURL = server.url;
 				}
 			}
 
-			if (!this.socketURL) {
+			if (!this.#socketURL) {
 				this.emit("error", new Error("No suitable socket available"));
 				return;
 			}
@@ -170,20 +169,20 @@ module.exports = (function () {
 		}
 
 		connect () {
-			if (this.socket) {
-				this.socket.close();
-				this.socket = null;
+			if (this.#socket) {
+				this.#socket.close();
+				this.#socket = null;
 			}
 
 			this.emit("connecting");
-			this.socket = SocketIO(this.socketURL)
+			this.#socket = SocketIO(this.#socketURL)
 				.on("error", (err) => this.emit("error", new Error(err)))
 				.once("connect", () => {
-					if (!this.handlersAssigned) {
+					if (!this.#handlersAssigned) {
 						this.assignHandlers();
-						this.handlersAssigned = true;
+						this.#handlersAssigned = true;
 					}
-					this.connected = true;
+					this.#connected = true;
 					this.emit("connected");
 				});
 
@@ -192,22 +191,23 @@ module.exports = (function () {
 
 		start () {
 			// this.console.log("Connecting to channel.");
-			this.socket.emit("joinChannel", { name: this.chan });
+			this.#socket.emit("joinChannel", { name: this.#chan });
 			this.emit("starting");
 
-			this.socket.once("needPassword", () => {
-				if (typeof this.pass !== "string") {
+			this.#socket.once("needPassword", () => {
+				if (typeof this.#pass !== "string") {
 					this.emit("error", new Error("Channel requires password"));
 					return;
 				}
-				this.socket.emit("channelPassword", this.pass);
+				
+				this.#socket.emit("channelPassword", this.#pass);
 			});
 
-			this.killswitch = setTimeout(() => {
+			this.#killswitch = setTimeout(() => {
 				this.emit("error", new Error("Channel connection failure - no response within 60 seconds"));
 			}, 60.0e3);
 
-			this.socket.once("login", (data) => {
+			this.#socket.once("login", (data) => {
 				if (typeof data === "undefined") {
 					this.emit("error", new Error("Malformed login frame recieved"));
 					return;
@@ -217,18 +217,17 @@ module.exports = (function () {
 					this.emit("error", new Error("Channel login failure", JSON.stringify(data)));
 				}
 				else {
-					// this.console.log("Channel connection established.");
 					this.emit("started");
 
-					clearTimeout(this.killswitch);
-					this.killswitch = null;
+					clearTimeout(this.#killswitch);
+					this.#killswitch = null;
 				}
 			});
 
-			this.socket.once("rank", () => {
-				this.socket.emit("login", {
-					name: this.user,
-					pw: this.auth
+			this.#socket.once("rank", () => {
+				this.#socket.emit("login", {
+					name: this.#user,
+					pw: this.#auth
 				});
 			});
 
@@ -236,25 +235,21 @@ module.exports = (function () {
 		}
 
 		assignHandlers () {
-			// this.console.log("Assigning event handlers.");
-
 			handlers.forEach(frame => {
-				this.socket.on(frame, (...args) => {
+				this.#socket.on(frame, (...args) => {
 					this.emit(frame, ...args);
 				});
 			});
 		}
 
 		destroy () {
-			if (this.socket) {
-				this.socket.disconnect(0);
-				this.socket = null;
+			if (this.#socket) {
+				this.#socket.disconnect(0);
+				this.#socket = null;
 			}
 		}
-
-		get configURL () {
-			return `${this.secure ? "https" : "http"}://${this.host}:${this.port}/socketconfig/${this.chan}.json`;
-		}
+		
+		get socket () { return this.#socket; }
 	}
 
 	Object.assign(CytubeConnector.prototype, {
