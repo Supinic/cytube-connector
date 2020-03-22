@@ -261,6 +261,11 @@ module.exports = (function () {
 			this.socket.emit("pm", privMsg);
 		},
 
+		// Userlist
+		getUserList: function () {
+			this.socket.emit("userlist");
+		},
+
 		// Polls
 		createPoll: function (poll) {
 			this.socket.emit("newPoll", poll);
