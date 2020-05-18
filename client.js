@@ -164,7 +164,7 @@ module.exports = (function () {
 				this.emit("error", new Error("No suitable socket available"));
 				return;
 			}
-			
+
 			this.emit("ready");
 		}
 
@@ -199,7 +199,7 @@ module.exports = (function () {
 					this.emit("error", new Error("Channel requires password"));
 					return;
 				}
-				
+
 				this.#socket.emit("channelPassword", this.#pass);
 			});
 
@@ -248,71 +248,78 @@ module.exports = (function () {
 				this.#socket = null;
 			}
 		}
-		
-		get socket () { return this.#socket; }
-	}
 
-	Object.assign(CytubeConnector.prototype, {
-		// Messages
-		chat: function (chatMsg) {
+		get socket () { return this.#socket; }
+
+		chat (chatMsg) {
 			this.socket.emit("chatMsg", chatMsg);
-		},
-		pm: function (privMsg) {
+		}
+
+		pm (privMsg) {
 			this.socket.emit("pm", privMsg);
-		},
+		}
 
 		// Userlist
-		getUserList: function () {
+		getUserList () {
 			this.socket.emit("userlist");
-		},
+		}
 
 		// Polls
-		createPoll: function (poll) {
+		createPoll (poll) {
 			this.socket.emit("newPoll", poll);
-		},
-		closePoll: function () {
+		}
+
+		closePoll () {
 			this.socket.emit("closePoll");
-		},
+		}
 
 		// Channel Control
-		sendOptions: function (opts) {
+		sendOptions (opts) {
 			this.socket.emit("setOptions", opts);
-		},
-		sendPermissions: function (perms) {
+		}
+
+		sendPermissions (perms) {
 			this.socket.emit("setPermissions", perms);
-		},
-		sendBanner: function (banner) {
+		}
+
+		sendBanner (banner) {
 			this.socket.emit("setMotd", banner);
-		},
+		}
 
 		// Bans
-		bans: function () {
+		bans () {
 			this.socket.emit("requestBanlist");
-		},
-		unban: function (ban) {
+		}
+
+		unban (ban) {
 			this.socket.emit("unban", ban);
-		},
+		}
 
 		// Media Control
-		leader: function (leader) {
+		leader (leader) {
 			this.socket.emit("assignLeader", leader);
-		},
-		deleteVideo: function (uid) {
+		}
+
+		deleteVideo (uid) {
 			this.socket.emit("delete", uid);
-		},
-		move: function (pos) {
+		}
+
+		move (pos) {
 			this.socket.emit("moveMedia", pos);
-		},
-		jump: function (uid) {
+		}
+
+		jump (uid) {
 			this.socket.emit("jumpTo", uid);
-		},
-		shuffle: function () {
+		}
+
+		shuffle () {
 			this.socket.emit("shufflePlaylist");
-		},
-		playlist: function () {
+		}
+
+		playlist () {
 			this.socket.emit("requestPlaylist");
 		}
-	});
+	}
 
 	return CytubeConnector;
 })();
