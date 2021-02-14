@@ -102,6 +102,8 @@ module.exports = (function () {
 		#socket = null;
 		#socketURL = null;
 
+		debug = false;
+
 		constructor (options) {
 			super();
 
@@ -119,6 +121,8 @@ module.exports = (function () {
 			this.#secure = options.secure ?? true;
 			this.#pass = options.pass ?? null;
 			this.#auth = options.auth ?? null;
+
+			this.debug = Boolean(options.debug);
 
 			this.once("ready", () => {
 				this.connect();
@@ -185,6 +189,10 @@ module.exports = (function () {
 					this.#connected = true;
 					this.emit("connected");
 				});
+
+			if (this.debug) {
+				this.#socket.prependAny((event, ...args) => console.log(event, args));
+			}
 
 			return this;
 		}
