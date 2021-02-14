@@ -4,8 +4,8 @@
     "email": "supinic@pm.me"
   },
   "dependencies": {
-    "got": "^11.0.0",
-    "socket.io-client": "^3.1.1"
+    "got": "^11.3.0",
+    "socket.io-client": "^2.2.0"
   },
   "deprecated": false,
   "description": "Simple Cytube client",
@@ -18,5 +18,5 @@
   "main": "client.js",
   "name": "cytube-connector",
   "private": true,
-  "version": "2.0.1"
+  "version": "2.0.0"
 }
