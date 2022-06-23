@@ -4,7 +4,7 @@
     "email": "supinic@pm.me"
   },
   "dependencies": {
-    "got": "^11.3.0",
+    "got": "^11.8.5",
     "socket.io-client": "^4.4.0",
     "xmlhttprequest-ssl": "^1.6.2"
   },
