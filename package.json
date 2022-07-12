@@ -5,8 +5,7 @@
   },
   "dependencies": {
     "got": "^11.3.0",
-    "socket.io-client": "^4.4.0",
-    "xmlhttprequest-ssl": "^1.6.2"
+    "socket.io-client": "^4.4.0"
   },
   "deprecated": false,
   "description": "Simple Cytube client",
