@@ -148,7 +148,9 @@ module.exports = (function () {
 					headers: {
 						"User-Agent": this.#agent
 					},
-					timeout: 20.0e3
+					timeout: {
+						request: 20.0e3
+					}
 				}).json();
 			}
 			catch (e) {
