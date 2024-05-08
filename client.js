@@ -1,10 +1,11 @@
 module.exports = (function () {
-	const EventEmitter = require("events");
+	const EventEmitter = require("node:events");
 	const SocketIO = require("socket.io-client");
 	const got = require("got");
 
 	const mandatoryConstructorOptions = ["chan", "host", "port", "user"];
-	const handlers = [ "disconnect",
+	const handlers = [
+		"disconnect",
 		/*
 		 These are from CyTube /src/user.js
 		 */
