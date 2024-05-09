@@ -84,7 +84,7 @@ module.exports = (function () {
 		"validationError",
 		"validationPassed",
 		"voteskip",
-		"warnLargeChandump",
+		"warnLargeChandump"
 	];
 
 	class CytubeConnector extends EventEmitter {
@@ -246,11 +246,11 @@ module.exports = (function () {
 		}
 
 		assignHandlers () {
-			handlers.forEach(frame => {
+			for (const frame of handlers) {
 				this.#socket.on(frame, (...args) => {
 					this.emit(frame, ...args);
 				});
-			});
+			}
 		}
 
 		destroy () {
@@ -270,7 +270,7 @@ module.exports = (function () {
 			this.socket.emit("pm", privMsg);
 		}
 
-		// Userlist
+		// User list
 		getUserList () {
 			this.socket.emit("userlist");
 		}
