@@ -117,7 +117,6 @@ export default class CytubeConnector extends EventEmitter {
 
 	#agent;
 	#socket: Socket | null = null;
-	#socketURL: string | null = null;
 
 	constructor (options: ConnectorOptions) {
 		super();
@@ -140,6 +139,10 @@ export default class CytubeConnector extends EventEmitter {
 		}
 
 		return this.#socket;
+	}
+
+	get initialized () {
+		return (this.#socket !== null);
 	}
 
 	async getSocketURL () {
@@ -172,13 +175,10 @@ export default class CytubeConnector extends EventEmitter {
 			this.destroy();
 		}
 
-		if (!this.#socketURL) {
-			this.#socketURL = await this.getSocketURL();
-		}
-
+		const socketURL = await this.getSocketURL();
 		this.emit("connecting");
 
-		const socket = io(this.#socketURL)
+		const socket = io(socketURL)
 			.on("error", (err) => this.emit("error", err))
 			.once("connect", () => {
 				for (const frame of handlers) {
@@ -190,28 +190,23 @@ export default class CytubeConnector extends EventEmitter {
 				this.emit("connected");
 			});
 
-		this.#socket = socket;
-		return this;
-	}
-
-	start () {
-		this.socket.emit("joinChannel", { name: this.#chan });
+		socket.emit("joinChannel", { name: this.#chan });
 		this.emit("starting");
 
-		this.socket.once("needPassword", () => {
+		socket.once("needPassword", () => {
 			if (typeof this.#pass !== "string") {
 				this.emit("error", new Error("Channel requires password"));
 				return;
 			}
 
-			this.socket.emit("channelPassword", this.#pass);
+			socket.emit("channelPassword", this.#pass);
 		});
 
 		const killswitch = setTimeout(() => {
 			this.emit("error", new Error("Channel connection failure - no response within 60 seconds"));
 		}, 60_000);
 
-		this.socket.once("login", (data) => {
+		socket.once("login", (data) => {
 			if (typeof data === "undefined") {
 				this.emit("error", new Error("Malformed login frame recieved"));
 				return;
@@ -226,13 +221,14 @@ export default class CytubeConnector extends EventEmitter {
 			}
 		});
 
-		this.socket.once("rank", () => {
-			this.socket.emit("login", {
+		socket.once("rank", () => {
+			socket.emit("login", {
 				name: this.#user,
 				pw: this.#auth
 			});
 		});
 
+		this.#socket = socket;
 		return this;
 	}
 
