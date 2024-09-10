@@ -1,4 +1,4 @@
-import EventEmitter from "node:events";
+import { EventEmitter } from "node:events";
 import { io, Socket } from "socket.io-client";
 
 type ConnectorOptions = {
