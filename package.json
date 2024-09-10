@@ -16,6 +16,7 @@
     "build": "npx tsc",
     "prepack": "npx tsc"
   },
+  "type": "module",
   "types": "build/client.d.ts",
   "main": "build/client.js",
   "name": "cytube-connector",

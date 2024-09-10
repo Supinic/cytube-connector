@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "es2023",                                  /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
-    "module": "esnext",                                /* Specify what module code is generated. */
+    "module": "nodenext",                                /* Specify what module code is generated. */
     "moduleResolution": "Bundler",
     "resolveJsonModule": true,                           /* Enable importing .json files. */
     // "allowArbitraryExtensions": true,                 /* Enable importing files with any extension, provided a declaration file is present. */
