@@ -18,5 +18,6 @@
   "main": "client.js",
   "name": "cytube-connector",
   "private": true,
-  "version": "2.1.0"
+  "version": "2.1.0",
+  "packageManager": "yarn@4.4.1"
 }
