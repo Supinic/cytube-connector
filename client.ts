@@ -10,6 +10,8 @@ type ConnectorOptions = {
 	secure?: boolean;
 	pass?: string | null;
 	auth?: string | null;
+
+	agent?: string;
 };
 
 type SocketConfigResponse = {
@@ -104,32 +106,32 @@ const handlers = [
 ];
 
 export default class CytubeConnector extends EventEmitter {
-	#chan;
 	#host;
 	#port;
+	#chan;
+	#secure;
+
 	#user;
 	#pass;
-	#secure;
 	#auth;
 
-	#agent = "cytube-client";
-	#connected = false;
-	#handlersAssigned = false;
-
+	#agent;
 	#socket: Socket | null = null;
 	#socketURL: string | null = null;
 
 	constructor (options: ConnectorOptions) {
 		super();
 
-		this.#chan = options.chan;
 		this.#host = options.host;
 		this.#port = options.port;
+		this.#chan = options.chan;
 		this.#user = options.user;
 
 		this.#secure = options.secure ?? true;
 		this.#pass = options.pass ?? null;
 		this.#auth = options.auth ?? null;
+
+		this.#agent = options.agent ?? "cytube-client";
 	}
 
 	get socket () {
@@ -179,17 +181,12 @@ export default class CytubeConnector extends EventEmitter {
 		const socket = io(this.#socketURL)
 			.on("error", (err) => this.emit("error", err))
 			.once("connect", () => {
-				if (!this.#handlersAssigned) {
-					for (const frame of handlers) {
-						socket.on(frame, (...args) => {
-							this.emit(frame, ...args);
-						});
-					}
-
-					this.#handlersAssigned = true;
+				for (const frame of handlers) {
+					socket.on(frame, (...args) => {
+						this.emit(frame, ...args);
+					});
 				}
 
-				this.#connected = true;
 				this.emit("connected");
 			});
 
