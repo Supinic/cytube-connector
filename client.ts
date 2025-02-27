@@ -105,7 +105,85 @@ const handlers = [
 	"warnLargeChandump"
 ];
 
-export default class CytubeConnector extends EventEmitter {
+export type UserObject = {
+	name: string;
+	meta: {
+		afk: boolean;
+		muted: boolean;
+		smuted: boolean;
+		aliases: string[];
+		ip: string;
+	};
+	profile: {
+		image: string;
+		text: string;
+	};
+	rank: number;
+};
+export type VideoObject = {
+	duration: string;
+	id: string;
+	meta: Record<string, unknown>;
+	seconds: number;
+	title: string;
+	type: string;
+	queueby: UserObject["name"];
+	temp: boolean;
+	uid: number;
+};
+export type QueueObject = {
+	item: {
+		media: {
+			id: string;
+			title: string;
+			seconds: number;
+			duration: string
+			type: string;
+			meta: Record<string, unknown>;
+		};
+		temp: boolean;
+		queueby: UserObject["name"];
+		uid: number;
+	};
+	after: number | string;
+};
+export type MessageObject = {
+	username: UserObject["name"];
+	msg: string;
+	meta: {
+		private?: boolean;
+		shadow?: boolean;
+	};
+	time: number;
+};
+export type EmoteObject = {
+	name: string;
+	image?: string | null;
+};
+
+export interface CytubeConnector {
+	on (event: "clientready", listener: () => void): this;
+	on (event: "changeMedia", listener: () => void): this;
+	on (event: "disconnect", listener: () => void): this;
+
+	on (event: "error", listener: (e: Error) => void): this;
+
+	on (event: "userlist", listener: (userList: UserObject[]) => void): this;
+	on (event: "playlist", listener: (videoList: VideoObject[]) => void): this;
+	on (event: "emoteList", listener: (emoteList: EmoteObject[]) => void): this;
+
+	on (event: "chatMsg", listener: (data: MessageObject) => void): this;
+	on (event: "pm", listener: (data: MessageObject) => void): this;
+	on (event: "queue", listener: (data: QueueObject) => void): this;
+	on (event: "addUser", listener: (data: UserObject) => void): this;
+	on (event: "userLeave", listener: (data: UserObject) => void): this;
+	on (event: "delete", listener: (data: VideoObject) => void): this;
+	on (event: "updateEmote", listener: (data: EmoteObject) => void): this;
+	on (event: "renameEmote", listener: (data: EmoteObject) => void): this;
+	on (event: "removeEmote", listener: (data: EmoteObject) => void): this;
+}
+
+export class CytubeConnector extends EventEmitter {
 	#host;
 	#port;
 	#chan;
@@ -308,3 +386,5 @@ export default class CytubeConnector extends EventEmitter {
 		this.socket.emit("requestPlaylist");
 	}
 }
+
+export default CytubeConnector;
