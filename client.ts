@@ -158,6 +158,12 @@ export type EmoteObject = {
 	image?: string;
 	source: string;
 };
+export type RenameEmoteObject = {
+	name: string;
+	old: string;
+	image?: string;
+	source: string;
+};
 
 export interface CytubeConnector {
 	on (event: "clientready", listener: () => void): this;
@@ -177,7 +183,7 @@ export interface CytubeConnector {
 	on (event: "userLeave", listener: (data: UserObject) => void): this;
 	on (event: "delete", listener: (data: VideoObject) => void): this;
 	on (event: "updateEmote", listener: (data: EmoteObject) => void): this;
-	on (event: "renameEmote", listener: (data: EmoteObject) => void): this;
+	on (event: "renameEmote", listener: (data: RenameEmoteObject) => void): this;
 	on (event: "removeEmote", listener: (data: EmoteObject) => void): this;
 }
 
