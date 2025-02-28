@@ -110,9 +110,9 @@ export type UserObject = {
 	meta: {
 		afk: boolean;
 		muted: boolean;
-		smuted: boolean;
-		aliases: string[];
-		ip: string;
+		smuted?: boolean;
+		aliases?: string[];
+		ip?: string;
 	};
 	profile: {
 		image: string;
@@ -120,32 +120,29 @@ export type UserObject = {
 	};
 	rank: number;
 };
-export type VideoObject = {
+
+type Media = {
 	duration: string;
 	id: string;
 	meta: Record<string, unknown>;
 	seconds: number;
 	title: string;
 	type: string;
+};
+export type VideoObject = {
+	media: Media;
 	queueby: UserObject["name"];
 	temp: boolean;
 	uid: number;
 };
 export type QueueObject = {
+	after: VideoObject["uid"] | "prepend";
 	item: {
-		media: {
-			id: string;
-			title: string;
-			seconds: number;
-			duration: string
-			type: string;
-			meta: Record<string, unknown>;
-		};
+		media: Media;
 		temp: boolean;
 		queueby: UserObject["name"];
-		uid: number;
+		uid: VideoObject["uid"];
 	};
-	after: number | string;
 };
 export type MessageObject = {
 	username: UserObject["name"];
@@ -158,7 +155,8 @@ export type MessageObject = {
 };
 export type EmoteObject = {
 	name: string;
-	image?: string | null;
+	image?: string;
+	source: string;
 };
 
 export interface CytubeConnector {
