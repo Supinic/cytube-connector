@@ -165,6 +165,15 @@ export type RenameEmoteObject = {
 	source: string;
 };
 
+export type ChatMessage = {
+	msg: string;
+	meta: Record<string, unknown>;
+};
+export type PrivateMessage = {
+	msg: string;
+	to: string;
+};
+
 export interface CytubeConnector {
 	on (event: "clientready", listener: () => void): this;
 	on (event: "changeMedia", listener: () => void): this;
@@ -321,11 +330,11 @@ export class CytubeConnector extends EventEmitter {
 		}
 	}
 
-	chat (chatMessage: string) {
+	chat (chatMessage: ChatMessage) {
 		this.socket.emit("chatMsg", chatMessage);
 	}
 
-	pm (privateMessage: string) {
+	pm (privateMessage: PrivateMessage) {
 		this.socket.emit("pm", privateMessage);
 	}
 
