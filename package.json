@@ -10,8 +10,11 @@
   "deprecated": false,
   "description": "Simple Cytube client",
   "engines": {
-    "node": ">= 12.0"
+    "node": ">= 20.0"
   },
+  "files": [
+    "build"
+  ],
   "scripts": {
     "build": "npx tsc",
     "prepack": "npx tsc"
