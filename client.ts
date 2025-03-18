@@ -174,26 +174,27 @@ export type PrivateMessage = {
 	to: string;
 };
 
+type Void = void | Promise<void>;
 export interface CytubeConnector {
-	on (event: "clientready", listener: () => void): this;
-	on (event: "changeMedia", listener: () => void): this;
-	on (event: "disconnect", listener: () => void): this;
+	on (event: "clientready", listener: () => Void): this;
+	on (event: "changeMedia", listener: () => Void): this;
+	on (event: "disconnect", listener: () => Void): this;
 
-	on (event: "error", listener: (e: Error) => void): this;
+	on (event: "error", listener: (e: Error) => Void): this;
 
-	on (event: "userlist", listener: (userList: UserObject[]) => void): this;
-	on (event: "playlist", listener: (videoList: VideoObject[]) => void): this;
-	on (event: "emoteList", listener: (emoteList: EmoteObject[]) => void): this;
+	on (event: "userlist", listener: (userList: UserObject[]) => Void): this;
+	on (event: "playlist", listener: (videoList: VideoObject[]) => Void): this;
+	on (event: "emoteList", listener: (emoteList: EmoteObject[]) => Void): this;
 
-	on (event: "chatMsg", listener: (data: MessageObject) => void): this;
-	on (event: "pm", listener: (data: MessageObject) => void): this;
-	on (event: "queue", listener: (data: QueueObject) => void): this;
-	on (event: "addUser", listener: (data: UserObject) => void): this;
-	on (event: "userLeave", listener: (data: UserObject) => void): this;
-	on (event: "delete", listener: (data: VideoObject) => void): this;
-	on (event: "updateEmote", listener: (data: EmoteObject) => void): this;
-	on (event: "renameEmote", listener: (data: RenameEmoteObject) => void): this;
-	on (event: "removeEmote", listener: (data: EmoteObject) => void): this;
+	on (event: "chatMsg", listener: (data: MessageObject) => Void): this;
+	on (event: "pm", listener: (data: MessageObject) => Void): this;
+	on (event: "queue", listener: (data: QueueObject) => Void): this;
+	on (event: "addUser", listener: (data: UserObject) => Void): this;
+	on (event: "userLeave", listener: (data: UserObject) => Void): this;
+	on (event: "delete", listener: (data: VideoObject) => Void): this;
+	on (event: "updateEmote", listener: (data: EmoteObject) => Void): this;
+	on (event: "renameEmote", listener: (data: RenameEmoteObject) => Void): this;
+	on (event: "removeEmote", listener: (data: EmoteObject) => Void): this;
 }
 
 export class CytubeConnector extends EventEmitter {
